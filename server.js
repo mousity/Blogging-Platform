@@ -8,6 +8,6 @@ app.use(express.json());
 app.listen(port, async () => {
     console.log(`Server running at http://localhost:${port}`);
     // Safer to use than sync() while still performing the same function
-    await sequelize.authenticate();
+    await sequelize.sync({force: true});
     console.log("running...");
 })
