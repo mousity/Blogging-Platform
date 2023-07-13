@@ -2,6 +2,7 @@
 const {
   Model
 } = require('sequelize');
+const { User, Post } = require("./user.js");
 module.exports = (sequelize, DataTypes) => {
   class Comment extends Model {
     /**
@@ -10,8 +11,8 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      this.belongsToOne(models.Post)
-      this.belongsToMany(models.User);
+      this.belongsTo(models.Post)
+      this.belongsTo(models.User);
     }
   }
   Comment.init({
@@ -19,6 +20,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'Comment',
+    tableName: 'comments'
   });
   return Comment;
 };
