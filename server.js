@@ -14,6 +14,7 @@ app.get("/users", async (req, res) => {
         const users = await User.findAll();
         return res.status(200).json(users);
     } catch (err) {
+        
         return res.status(500).send({ message: "Something went wrong fetching users!"});
     }
 
