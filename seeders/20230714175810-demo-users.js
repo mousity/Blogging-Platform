@@ -3,7 +3,6 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
-    
     await queryInterface.bulkInsert('users', [{
       name: "User1",
       email: "example1@user.com",
@@ -29,6 +28,6 @@ module.exports = {
   },
 
   async down (queryInterface, Sequelize) {
-    await queryInterface.bulkDelete('users', null, {});
+    await queryInterface.bulkDelete('users', null, {truncate: true, cascade: true});
   }
 };
