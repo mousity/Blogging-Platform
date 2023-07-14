@@ -10,8 +10,8 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      this.belongsTo(models.User, { foreignKey: "userId" });
-      this.hasMany(models.Comment, { foreighKey: "postId" });
+      this.belongsTo(models.User, { foreignKey: "userId", targetKey: 'id' });
+      this.hasMany(models.Comment, { foreighKey: "postId", targetKey: 'id' });
     }
   }
   Post.init({
@@ -23,10 +23,19 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false
     },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: false
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: false
+    }
   }, {
     sequelize,
     modelName: 'Post',
-    tableName: 'posts'
+    tableName: 'posts',
+    underscored: true
   });
   return Post;
 };
