@@ -6,32 +6,32 @@ module.exports = {
     await queryInterface.bulkInsert('comments', [
     {
       body: "I'm also the first to comment on stuff!",
-      userId: 1,
-      postId: 1,
+      user_id: 1,
+      post_id: 1,
       created_at: new Date(),
       updated_at: new Date()
      },{
       body: "I bet your spaghetti tastes like cardboard!!!",
-      userId: 2,
-      postId: 2,
+      user_id: 2,
+      post_id: 2,
       created_at: new Date(),
       updated_at: new Date()
      },{
       body: "What brand of sauce did you use?",
-      userId: 3,
-      postId: 2,
+      user_id: 3,
+      post_id: 2,
       created_at: new Date(),
       updated_at: new Date()
      },{
       body: "I don't.",
-      userId: 1,
-      postId: 5,
+      user_id: 1,
+      post_id: 5,
       created_at: new Date(),
       updated_at: new Date()
      },{
       body: "It's okay, I'll use a screwdriver. They're basically the same thing",
-      userId: 3,
-      postId: 5,
+      user_id: 3,
+      post_id: 5,
       created_at: new Date(),
       updated_at: new Date()
      }], {});

@@ -77,7 +77,7 @@ app.post("/posts/:id", authenticateUser, async (req, res) => {
 
         const uPost = await Post.create({
             body: req.body.body,
-            userId: currId,
+            user_id: currId,
             created_at: new Date(),
             updated_at: new Date()
         }, {
