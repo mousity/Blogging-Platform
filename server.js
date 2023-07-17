@@ -1,4 +1,4 @@
-const { sequelize, User } = require("./models");
+const { sequelize, User, Post, Comment } = require("./models");
 const express = require("express");
 const port = 4000;
 const bcrypt = require("bcryptjs");
@@ -62,6 +62,31 @@ app.post("/users", authenticateUser, async (req, res) => {
         return res.status(200).json(user);
     } catch (err) {
         return res.status(500).send({ message: "Something went wrong! "});
+    }
+})
+
+app.post("/posts/:id", authenticateUser, async (req, res) => {
+    const currId = parseInt(req.params.id, 10);
+    if(req.session.userId != currId) {
+        return res.status(201).send({ message: "You cannot post on this user's page!"})
+    }
+    console.log(req.body.body);
+    try {
+        console.log(req.body.body);
+        console.log(currId);
+
+        const uPost = await Post.create({
+            body: req.body.body,
+            userId: currId,
+            created_at: new Date(),
+            updated_at: new Date()
+        }, {
+            raw: true, 
+        });
+
+        return res.status(200).json(uPost);
+    } catch (err) {
+        return res.status(500).send({ message: err.message  });
     }
 })
 
