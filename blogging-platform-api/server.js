@@ -5,17 +5,23 @@ const bcrypt = require("bcryptjs");
 const app = express();
 const session = require('express-session');
 require('dotenv').config();
+const cors = require('cors');
 app.use(express.json());
+app.use(cors());
 
-app.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      maxAge: 3600000 // 1 hour
-    },
-  }));
+// app.use(session({
+//     secret: process.env.SESSION_SECRET,
+//     resave: false,
+//     saveUninitialized: false,
+//     cookie: {
+//       maxAge: 3600000 // 1 hour
+//     },
+//   }));
   
+app.get('/message', (req, res) => {
+    res.json({ message: "Hello from server!" });
+});
+
 const authenticateUser = (req, res, next) => {
     if (!req.session.userId) {
       return res.status(401).json({ message: 'You must be logged in to view this page.' });
