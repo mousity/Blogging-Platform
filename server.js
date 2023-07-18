@@ -40,7 +40,7 @@ app.get("/users", authenticateUser, async (req, res) => {
 /* GET SPECIFIC INSTANCE OF functions for all models */
 
 // Get SPECIFIC USER
-app.get("/user/:id", authenticateUser, async (req, res) => {
+app.get("/users/:id", authenticateUser, async (req, res) => {
     const userId = parseInt(req.params.id, 10);
     try {
         // Destroy a recipe specified by the id
@@ -55,18 +55,9 @@ app.get("/user/:id", authenticateUser, async (req, res) => {
 
 /* POST functions for all models */
 
-app.post("/users", authenticateUser, async (req, res) => {
-
-    try {
-        const user = await User.create(req.body);
-        return res.status(200).json(user);
-    } catch (err) {
-        return res.status(500).send({ message: "Something went wrong! "});
-    }
-})
-
-app.post("/posts/:id", authenticateUser, async (req, res) => {
-    const currId = parseInt(req.params.id, 10);
+// Post on the current logged in users page
+app.post("users/:userid/posts/", authenticateUser, async (req, res) => {
+    const currId = parseInt(req.params.userid, 10);
     if(req.session.userId != currId) {
         return res.status(201).send({ message: "You cannot post on this user's page!"})
     }
@@ -87,6 +78,25 @@ app.post("/posts/:id", authenticateUser, async (req, res) => {
         return res.status(200).json(uPost);
     } catch (err) {
         return res.status(500).send({ message: err.message  });
+    }
+})
+
+app.post("/posts/:id/comments", authenticateUser, async (req, res) => {
+    const currPostId = parseInt(req.params.id, 10);
+    console.log("in here!")
+    try {
+        const comment = await Comment.create({
+            body: req.body.body,
+            user_id: req.session.userId,
+            post_id: currPostId,
+            created_at: new Date(),
+            updated_at: new Date()
+        }, {
+            raw: true,
+        });
+        return res.status(200).json(comment);
+    } catch (err) {
+        return res.status(500).send({ message: err.message })
     }
 })
 
@@ -164,6 +174,9 @@ app.post('/signup', async (req, res) => {
 // Delete a SPECIFIC USER
 app.delete("/user/:id", async (req, res) => {
     const userId = parseInt(req.params.id, 10);
+    if(req.session.userId != userId) {
+        return res.status(201).send({ message: "You cannot delete this user's page!"})
+    }
     try {
         // Destroy a recipe specified by the id
         const user = await User.destroy({ where: {id: userId} });
@@ -171,6 +184,30 @@ app.delete("/user/:id", async (req, res) => {
         return res.status(200).json(user);
     } catch (err) {
         return res.status(404).send({ message: "User not found"});
+    }
+})
+
+app.delete("/post/:id/comments/:commentid", async (req, res) => {
+    const commentId = parseInt(req.params.commentid, 10);
+    try {
+        // Destroy a recipe specified by the id
+        const comment = await Comment.destroy({ where: {id: commentId} });
+        console.log("Post deleted");
+        return res.status(200).json(comment);
+    } catch (err) {
+        return res.status(404).send({ message: "Comment not found"});
+    }
+})
+
+app.delete("/post/:id", async (req, res) => {
+    const postId = parseInt(req.params.id, 10);
+    try {
+        // Destroy a recipe specified by the id
+        const post = await Post.destroy({ where: {id: postId} });
+        console.log("Post deleted");
+        return res.status(200).json(post);
+    } catch (err) {
+        return res.status(404).send({ message: "Post not found"});
     }
 })
 
