@@ -22,8 +22,8 @@ const authenticateUser = (req, res, next) => {
     }
     next();
   };
-/* GET functions for all models */
 
+/* GET functions for all models */
 // Get all USERS
 app.get("/users", authenticateUser, async (req, res) => {
 
@@ -37,31 +37,109 @@ app.get("/users", authenticateUser, async (req, res) => {
 
 })
 
-/* GET SPECIFIC INSTANCE OF functions for all models */
+// Get all POSTS
+app.get("/posts", authenticateUser, async (req, res) => {
 
+  try {
+      const posts = await Post.findAll();
+      return res.status(200).json(posts);
+  } catch (err) {
+      
+      return res.status(500).send({ message: "Something went wrong fetching posts!"});
+  }
+
+})
+
+// Get all COMMENTS
+app.get("/comments", authenticateUser, async (req, res) => {
+
+  try {
+      const comments = await Comment.findAll();
+      return res.status(200).json(comments);
+  } catch (err) {
+      return res.status(500).send({ message: "Something went wrong fetching comments!"});
+  }
+})
+
+// Get all POSTS from a certain user
+app.get("users/:userid/posts", authenticateUser, async (req, res) => {
+  const userId = parseInt(req.params.userid, 10);
+  try {
+    const posts = await Post.findAll({where: { user_id: userId } });
+    return res.status(200).json(posts);
+  } catch (err) {
+    return res.status(500).send({ message: "Something went wrong fetching posts by this user!" })
+  }
+})
+
+// Get all COMMENTS associated with a certain post
+app.get("/posts/:id/comments", authenticateUser, async (req, res) => {
+  const postId = parseInt(req.params.userid, 10);
+  try {
+    const comments = await Comment.findAll({where: { post_id: postId } });
+    return res.status(200).json(comments);
+  } catch (err) {
+    return res.status(500).send({ message: "Something went wrong fetching comments associated with this post!" })
+  }
+})
+
+// Get all COMMENTS associated with a certain user
+app.get("/users/:id/comments", authenticateUser, async (req, res) => {
+  const userId = parseInt(req.params.userid, 10);
+  try {
+    const comments = await Comment.findAll({where: { user_id: userId } });
+    return res.status(200).json(comments);
+  } catch (err) {
+    return res.status(500).send({ message: "Something went wrong fetching comments associated with this user!" })
+  }
+})
+
+
+/* GET SPECIFIC INSTANCE OF functions for all models */
 // Get SPECIFIC USER
 app.get("/users/:id", authenticateUser, async (req, res) => {
     const userId = parseInt(req.params.id, 10);
     try {
         // Destroy a recipe specified by the id
         const user = await User.findOne({ where: {id: userId} });
-        console.log("User deleted");
+        console.log("User found");
         return res.status(200).json(user);
     } catch (err) {
-        return res.status(404).send({ message: "User not found"});
+        return res.status(404).send({ message: "User not found" });
     }
+})
+
+app.get("/posts/:id", authenticateUser, async (req, res) => {
+    const postId = parseInt(req.params.id, 10);
+    try {
+      const post = await Post.findOne({ where: { id: postId } });
+      console.log("Post found");
+      return res.status(200).json(post);
+    } catch (err) {
+      return res.status(404).send({ message: "Post not found" })
+    }
+})
+
+app.get("/posts/:postid/comments/:id", async (req, res) => {
+  const commentId = parseInt(req.params.id, 10);
+
+  try {
+    const comment = await Comment.findOne({ where: {id: commentId } });
+    console.log("Comment found");
+    return res.status(200).json(comment);
+  } catch (err) {
+    return res.status(404).send({ message: "Comment not found" })
+  }
 })
 
 
 /* POST functions for all models */
-
 // Post on the current logged in users page
 app.post("users/:userid/posts/", authenticateUser, async (req, res) => {
     const currId = parseInt(req.params.userid, 10);
     if(req.session.userId != currId) {
         return res.status(201).send({ message: "You cannot post on this user's page!"})
     }
-    console.log(req.body.body);
     try {
         console.log(req.body.body);
         console.log(currId);
@@ -81,6 +159,7 @@ app.post("users/:userid/posts/", authenticateUser, async (req, res) => {
     }
 })
 
+// Post a comment on a user's post
 app.post("/posts/:id/comments", authenticateUser, async (req, res) => {
     const currPostId = parseInt(req.params.id, 10);
     console.log("in here!")
@@ -100,6 +179,7 @@ app.post("/posts/:id/comments", authenticateUser, async (req, res) => {
     }
 })
 
+// Allow the user to signup
 app.post('/signup', async (req, res) => {
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
   
@@ -129,6 +209,8 @@ app.post('/signup', async (req, res) => {
       }
   });
 
+
+  // Allow for user login
   app.post('/login', async (req, res) => {
     try {
       // First, find the user by their email address
@@ -168,9 +250,49 @@ app.post('/signup', async (req, res) => {
 
 /* PATCH functions for all models */
 
+app.patch("/posts/:id", async (req, res) => {
+  const postId = parseInt(req.params.id, 10);
+  const post = await Post.findOne({ where: { id: postId, user_id: req.session.id }})
+  if (!post) {
+    return res.status(401).send({ message: "You cannot edit another user's post!" })
+  }
+
+  try {
+    const [numberOfAffectedRows, affectedRows] = await Post.update(req.body, { where: { id: postId }, returning: true });
+
+    if (numberOfAffectedRows > 0) {
+      res.status(200).json(affectedRows[0]);
+    } else {
+      res.status(404).send({ message: "Post not found" });
+    }
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+    console.error(err);
+  }
+});
+
+app.patch("/posts/:postid/comments/:id", async (req, res) => {
+  const commentId = parseInt(req.params.id, 10);
+  const comment = await Comment.findOne({ where: { id: commentId, user_id: req.session.id }})
+  if (!comment) {
+    return res.status(401).send({ message: "You cannot edit another user's comment!" })
+  }
+
+  try {
+    const [numberOfAffectedRows, affectedRows] = await Comment.update(req.body, { where: { id: commentId }, returning: true });
+
+    if (numberOfAffectedRows > 0) {
+      res.status(200).json(affectedRows[0]);
+    } else {
+      res.status(404).send({ message: "Comment not found" });
+    }
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+    console.error(err);
+  }
+});
 
 /* DELETE functions for all models */
-
 // Delete a SPECIFIC USER
 app.delete("/user/:id", async (req, res) => {
     const userId = parseInt(req.params.id, 10);
@@ -178,7 +300,7 @@ app.delete("/user/:id", async (req, res) => {
         return res.status(201).send({ message: "You cannot delete this user's page!"})
     }
     try {
-        // Destroy a recipe specified by the id
+        // Destroy a user specified by the id
         const user = await User.destroy({ where: {id: userId} });
         console.log("User deleted");
         return res.status(200).json(user);
@@ -189,10 +311,14 @@ app.delete("/user/:id", async (req, res) => {
 
 app.delete("/post/:id/comments/:commentid", async (req, res) => {
     const commentId = parseInt(req.params.commentid, 10);
+    const comment = await Comment.findOne({ where: { id: commentId, user_id: req.session.id }})
+    if (!comment) {
+      return res.status(401).send({ message: "You cannot delete another user's comment!" })
+    }
     try {
-        // Destroy a recipe specified by the id
+        // Destroy a comment specified by the id
         const comment = await Comment.destroy({ where: {id: commentId} });
-        console.log("Post deleted");
+        console.log("Comment deleted");
         return res.status(200).json(comment);
     } catch (err) {
         return res.status(404).send({ message: "Comment not found"});
@@ -201,8 +327,12 @@ app.delete("/post/:id/comments/:commentid", async (req, res) => {
 
 app.delete("/post/:id", async (req, res) => {
     const postId = parseInt(req.params.id, 10);
+    const post = await Post.findOne({ where: { id: postId, user_id: req.session.id }})
+    if (!post) {
+      return res.status(401).send({ message: "You cannot delete another user's post!" })
+    }
     try {
-        // Destroy a recipe specified by the id
+        // Destroy a post specified by the id
         const post = await Post.destroy({ where: {id: postId} });
         console.log("Post deleted");
         return res.status(200).json(post);
