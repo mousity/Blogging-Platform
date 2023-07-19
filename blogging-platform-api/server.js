@@ -9,14 +9,14 @@ const cors = require('cors');
 app.use(express.json());
 app.use(cors());
 
-// app.use(session({
-//     secret: process.env.SESSION_SECRET,
-//     resave: false,
-//     saveUninitialized: false,
-//     cookie: {
-//       maxAge: 3600000 // 1 hour
-//     },
-//   }));
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 3600000 // 1 hour
+    },
+  }));
   
 app.get('/message', (req, res) => {
     res.json({ message: "Hello from server!" });

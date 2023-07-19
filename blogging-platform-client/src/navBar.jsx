@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { Outlet } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 function NavBar() {
 
@@ -13,12 +15,13 @@ const [message, setMessage] = useState("")
     return (
         <div className="entire-page">
             <div className="navbar">
-                <button>Home</button>
-                <button>Users</button>
-                <button>Posts</button>
+                <Link to="/">Home</Link>
+                <Link to="/about">About</Link>
+                <Link to="/users">Users</Link>
+                <Link to="/posts">Posts</Link>
             </div>
             <div className="content">
-                <h1>{message}</h1>
+                <Outlet></Outlet>
             </div>
         </div>
     )
